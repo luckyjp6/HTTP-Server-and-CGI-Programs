@@ -40,6 +40,12 @@ void my_escape(string& data) {
     data.swap(buffer);
 }
 
+void output_error(int id, string add)
+{
+	printf("<script>document.getElementById('s%d').innerHTML += '%s';</script>\n", id, add.data());
+	fflush(stdout);
+}
+
 void output_topic(int id, string add)
 {
 	printf("<script>document.getElementById('t%d').innerHTML += '%s';</script>\n", id, add.data());
@@ -138,7 +144,7 @@ private:
 			}
 			else 
 			{
-				cout << "failed to read from shell" << endl;
+				output_error(id, "failed to read from shell\n");
 				exit(0);
 			}
         });
@@ -150,7 +156,7 @@ private:
 			cout << "end of filen";
 			close_client();
 		}
-		cout << "###########reading############" << endl;
+		// cout << "###########reading############" << endl;
         // read command from file
         string in;        
 		getline(cin, in);
@@ -250,29 +256,29 @@ int main()
                             </html>" << endl;
     }
     
+	// setenv("QUERY_STRING", "h0=nplinux1.cs.nctu.edu.tw&p0=1234&f0=t5.txt&h1=nplinux1.cs.nctu.edu.tw&p1=2345&f1=t4.txt&h2=&p2=&f2=&h3=&p3=&f3=&h4=&p4=&f4=", 1);
     string query = getenv("QUERY_STRING");
     parse_query(query);
 
     boost::asio::io_context io_context;
     boost::asio::io_service io_service;
 
-    for (int i = 0; i < 1; i++)
+	int num_child = 0;
+    for (int i = 0; i < 5; i++)
     {
-		if (fork() == 0)
+// cout << "##################### " << i << endl;
+		if (my_query[i].file.size() <= 0) break;
+		num_child ++;
+
+		int pid = fork();
+		if (pid < 0) cout << "too many children" << endl;
+		if (pid == 0)
 		{
 			cout << "start reading file " << my_query[i].file.data() << endl;
-			if (my_query[i].file.size() > 0) 
-			{
-				if ((my_query[i].fd = open(my_query[i].file.data(), O_RDONLY)) > 0)
-					cout << "successfully open " << my_query[i].file.data() << endl;
-				else cout << "can't open file " << my_query[i].file.data() << endl;
-			}
-			else 
-			{
-				cout << "no give file" << endl;
-				// break;
-				return -1;
-			}
+
+			if ((my_query[i].fd = open(my_query[i].file.data(), O_RDONLY)) > 0)
+				cout << "successfully open " << my_query[i].file.data() << endl;
+			else cout << "can't open file " << my_query[i].file.data() << endl;
 			
 			tcp::socket socket(io_context);
 			tcp::resolver r(io_service);
@@ -297,12 +303,17 @@ int main()
 			cout << "connect success: " << socket.remote_endpoint().address() << ":" << socket.remote_endpoint().port() << endl;
 
 			make_shared<my_client> (move(socket))->start(i);
-			break;
-		}
+			
+			io_context.run();
+			return 0;
+		}else wait();
 		
     }
-        
     
-    io_context.run();
+	// while(num_child > 0)
+	// {
+	// 	wait();
+	// 	num_child--;
+	// }
     return 0;
 }
