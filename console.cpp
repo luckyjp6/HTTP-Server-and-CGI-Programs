@@ -31,7 +31,9 @@ void my_escape(string& data) {
             case '\'': buffer.append("&apos;");      break;
             case '<':  buffer.append("&lt;");        break;
             case '>':  buffer.append("&gt;");        break;
-            case '\n': buffer.append("&NewLine;");   break;
+            case '\r': break;
+			case '\n': buffer.append("&NewLine;");   break;
+			
             default:   buffer.append(&data[pos], 1); break;
         }
     }
@@ -46,7 +48,6 @@ void output_topic(int id, string add)
 
 void output_shell(int id, string add)
 {
-	// add += "\n";
     my_escape(add);
 	printf("<script>document.getElementById('s%d').innerHTML += '%s';</script>\n", id, add.data());
 	fflush(stdout);
@@ -54,7 +55,6 @@ void output_shell(int id, string add)
 
 void output_command(int id, string add)
 {
-	// add += "\n";
     my_escape(add);
     printf("<script>document.getElementById('s%d').innerHTML += '<b>%s</b>';</script>\n", id, add.data());
 	fflush(stdout);
@@ -119,25 +119,6 @@ private:
 	}
     void do_read_shell()
     {
-        // read from np shell
-        // output everything until '%' is prompted
-		// char shell_msg[max_length];
-		// memset(shell_msg, '\0', max_length);
-		// int length = read(shell.native_handle(), shell_msg, max_length);
-		// if (length < 0)
-		// {
-		// 	cout << "failed to read" << endl;
-		// 	exit(0);
-		// }
-		// if (length == 0)
-		// {
-		// 	cout << "connection closed by server" << endl;
-		// 	exit(0);
-		// }
-		// string shell_msg_s(shell_msg);
-		// output_shell(id, shell_msg_s);
-		// if (shell_msg_s.find('%') != string::npos) do_read_file();
-		// else do_read_shell();
         auto self(shared_from_this());
 		memset(shell_msg, '\0', max_length);
         shell.async_read_some(boost::asio::buffer(shell_msg, max_length),
@@ -169,6 +150,7 @@ private:
 			cout << "end of filen";
 			close_client();
 		}
+		cout << "###########reading############" << endl;
         // read command from file
         string in;        
 		getline(cin, in);
@@ -181,13 +163,6 @@ private:
 	void do_write_shell(string in)
 	{
 		in += "\n";
-		// write the new command to shell            
-		// if (write(shell.native_handle(), in.data(), in.size()) <= 0)
-		// {
-		// 	cout << "failed to write" << endl;
-		// 	exit(0);
-		// }
-		// do_read_shell();
 
         auto self(shared_from_this());
 
@@ -275,7 +250,6 @@ int main()
                             </html>" << endl;
     }
     
-    // setenv("QUERY_STRING", "h0=nplinux1.cs.nctu.edu.tw&p0=1234&f0=t1.txt&h1=&p1=&f1=&h2=&p2=&f2=&h3=&p3=&f3=&h4=&p4=&f4=", 1); 
     string query = getenv("QUERY_STRING");
     parse_query(query);
 
