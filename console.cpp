@@ -18,9 +18,6 @@ struct q
     int fd;
 }my_query[5];
 
-string id_name[5] = {"s0", "s1", "s2", "s3", "s4"};
-char *buff[5];
-
 void my_escape(string& data) {
     string buffer;
     buffer.reserve(data.size());
@@ -68,7 +65,6 @@ void output_command(int id, string add)
 
 void parse_query(string query)
 {
-	cout << "query: " << query << endl;
     int eq = 0, ad = 0;
     for (int i = 0; i < 5; i++)
     {
@@ -135,7 +131,7 @@ private:
 				if (length == 0)
 				{
 					cout << "connection closed by server!" << endl;
-					exit(0);
+					close_client();
 				}
 				string shell_msg_s(shell_msg);
 				output_shell(id, shell_msg_s);
@@ -266,7 +262,6 @@ int main()
 	int num_child = 0;
     for (int i = 0; i < 5; i++)
     {
-// cout << "##################### " << i << endl;
 		if (my_query[i].file.size() <= 0) break;
 		num_child ++;
 
@@ -309,11 +304,6 @@ int main()
 		}else wait();
 		
     }
-    
-	// while(num_child > 0)
-	// {
-	// 	wait();
-	// 	num_child--;
-	// }
+
     return 0;
 }

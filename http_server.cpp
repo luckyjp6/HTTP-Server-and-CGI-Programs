@@ -13,22 +13,9 @@ class session
 {
 public:
   session(tcp::socket socket)
-    : socket_(std::move(socket))
-  {
-    // args = (char**) malloc(sizeof(char*));
-  }
-
-  ~session()
-  {
-    // free(args);
-  }
-
-
-  void start()
-  {
-    char welcome_msg[max_length];
-    do_read();
-  }
+    : socket_(std::move(socket)) {}
+    
+  void start() { do_read(); }
 
 private:
   void my_parse_request(std::size_t length)
@@ -88,17 +75,12 @@ private:
             do_write("HTTP:1.1 200 OK\r\n");
             printf("connected\n");
 
-            // printf("###query:\n%s\n", rq);
             my_parse_request(length);
             char to[100];
             sprintf(to, ".%s", getenv("REQUEST_URI"));
             printf("to:%s\n", to);
 
             printf("native handle: %d\n", socket_.native_handle());
-            
-            // args[0] = (char*) malloc(sizeof(char) * sizeof("pannel.cgi"));
-            // strcpy(args[0], "pannel.cgi");
-            
             
             if (fork() == 0){
               dup2(socket_.native_handle(), STDOUT_FILENO);
@@ -122,7 +104,7 @@ private:
         {
           if (!ec)
           {
-            do_read();
+            // do_read();
           }
         });
   }
@@ -131,7 +113,6 @@ private:
   enum { max_length = 15000 };
   char data_[max_length];
   char rq[max_length];
-  // char **args;
 };
 
 class server
