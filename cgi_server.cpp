@@ -8,6 +8,8 @@
 using namespace std;
 using boost::asio::ip::tcp;
 
+boost::asio::io_context io_context;
+
 struct q
 {
     string host, port, file;
@@ -415,7 +417,6 @@ private:
 	{
 		print_console();
 		parse_query();
-		boost::asio::io_context io_context;
 
 		int num_child = 0;
 		for (int i = 0; i < 5; i++)
@@ -448,7 +449,6 @@ private:
 
 			make_shared<my_client> (std::move(shell), web)->start(i);	
 		}
-		io_context.run();
 	}
 	void print_console()
 	{
@@ -567,7 +567,6 @@ int main(int argc, char **argv)
 
     try 
     {
-        boost::asio::io_context io_context;
         server s(io_context, atoi(argv[1]));
         io_context.run();
     }
