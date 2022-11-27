@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 
 #define max_length 50000
+#define num_server 5
 
 using namespace std;
 using boost::asio::ip::tcp;
@@ -12,9 +13,16 @@ boost::asio::io_context io_context;
 
 struct q
 {
+	void copy(q a)
+	{
+		host = a.host; 
+		port = a.port;
+		file = a.file;
+		fd 	 = a.fd;
+	}
     string host, port, file;
     int fd;
-}my_query[5];
+};
 
 void Setenv(string env, string var)
 {
@@ -52,9 +60,10 @@ class my_client
   : public std::enable_shared_from_this<my_client>
 {
 public:
-    my_client(tcp::socket shell_, boost::shared_ptr<tcp::socket> web_) 
+    my_client(tcp::socket shell_, boost::shared_ptr<tcp::socket> web_, q query[]) 
     : shell(std::move(shell_)), web(web_)
     {
+		for (int i = 0; i < num_server; i++) my_query[i].copy(query[i]);
     }
 
     void start(int index)
@@ -172,6 +181,7 @@ private:
 
 	int id;
 	ifstream in;
+	q my_query[num_server];
 	char shell_msg[max_length];
     tcp::socket shell;
 	boost::shared_ptr<tcp::socket> web;
@@ -340,7 +350,7 @@ private:
 								</thead>\
 								<tbody>\n");
 						
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < num_server; i++)
 		{
 			char msg[max_length];
 			memset(msg, '\0', max_length);
@@ -385,7 +395,7 @@ private:
 		string query;
 		Getenv("QUERY_STRING", query);
 		int eq = 0, ad = 0;
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < num_server; i++)
 		{
 			// host
 			eq = query.find('=', eq);
@@ -419,7 +429,7 @@ private:
 		parse_query();
 
 		int num_child = 0;
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < num_server; i++)
 		{
 			
 			if (my_query[i].file.size() <= 0) break;
@@ -447,7 +457,7 @@ private:
 
 			cout << "connect success: " << shell.remote_endpoint().address() << ":" << shell.remote_endpoint().port() << endl;
 
-			make_shared<my_client> (std::move(shell), web)->start(i);	
+			make_shared<my_client> (std::move(shell), web, my_query)->start(i);	
 		}
 	}
 	void print_console()
@@ -522,8 +532,8 @@ private:
 		do_write(msg);
 	}
 	
+	q my_query[num_server];
 	boost::shared_ptr<tcp::socket> web;
-	// tcp::socket web;
 	char data_[max_length];
 	char rq[max_length];
 };

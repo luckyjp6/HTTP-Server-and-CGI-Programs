@@ -8,15 +8,23 @@
 #include <boost/system/error_code.hpp>
 
 #define max_length 50000
+#define num_server 5
 
 using namespace std;
 using boost::asio::ip::tcp;
 
 struct q
 {
+    void copy(q a)
+	{
+		host = a.host; 
+		port = a.port;
+		file = a.file;
+		fd 	 = a.fd;
+	}
     string host, port, file;
     int fd;
-}my_query[5];
+};
 
 void my_escape(string& data) {
     string buffer;
@@ -42,20 +50,17 @@ void output_error(int id, string add)
 	printf("<script>document.getElementById('s%d').innerHTML += '%s';</script>\n", id, add.data());
 	fflush(stdout);
 }
-
 void output_topic(int id, string add)
 {
 	printf("<script>document.getElementById('t%d').innerHTML += '%s';</script>\n", id, add.data());
 	fflush(stdout);
 }
-
 void output_shell(int id, string add)
 {
     my_escape(add);
 	printf("<script>document.getElementById('s%d').innerHTML += '%s';</script>\n", id, add.data());
 	fflush(stdout);
 }
-
 void output_command(int id, string add)
 {
     my_escape(add);
@@ -63,10 +68,10 @@ void output_command(int id, string add)
 	fflush(stdout);
 }
 
-void parse_query(string query)
+void parse_query(string query, q &my_query[])
 {
     int eq = 0, ad = 0;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < num_server; i++)
     {
         // host
         eq = query.find('=', eq);
@@ -99,9 +104,10 @@ class my_client
   : public std::enable_shared_from_this<my_client>
 {
 public:
-    my_client(tcp::socket socket)
+    my_client(tcp::socket socket, q query[])
     : shell(std::move(socket))
     {
+        for (int i = 0; i < num_server; i++) my_query[i].copy(query[i]);
     }
 
     void start(int index)
@@ -161,7 +167,6 @@ private:
 		// else 
 		do_write_shell(in);
 	}
-
 	void do_write_shell(string in)
 	{
 		in += "\n";
@@ -181,7 +186,9 @@ private:
 			}
         });
     }
+    
     int id;
+    q my_query[num_server];
 	char shell_msg[max_length];
     tcp::socket shell;
 };
@@ -254,7 +261,8 @@ int main()
     
 	// setenv("QUERY_STRING", "h0=nplinux1.cs.nctu.edu.tw&p0=1234&f0=t5.txt&h1=nplinux1.cs.nctu.edu.tw&p1=2345&f1=t4.txt&h2=&p2=&f2=&h3=&p3=&f3=&h4=&p4=&f4=", 1);
     string query = getenv("QUERY_STRING");
-    parse_query(query);
+    q my_query[num_server];
+    parse_query(query, my_query);
 
     boost::asio::io_context io_context;
     boost::asio::io_service io_service;
