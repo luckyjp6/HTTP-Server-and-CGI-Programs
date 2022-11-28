@@ -96,10 +96,10 @@ private:
           }
         });
   }
-  void do_write(char *msg)
+  void do_write(std::string msg)
   {
     auto self(shared_from_this());
-    boost::asio::async_write(socket_, boost::asio::buffer(msg, strlen(msg)),
+    boost::asio::async_write(socket_, boost::asio::buffer(msg.data(), msg.size()),
         [this, self](boost::system::error_code ec, std::size_t /*length*/)
         {
           if (!ec)

@@ -22,7 +22,8 @@ print('Content-type: text/html', end='\r\n\r\n')
 print('''
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+  <html lang='en'>
+					<head>
 						<meta charset='UTF-8' />
 						<title>NP Project 3 Panel</title>
 						<link
