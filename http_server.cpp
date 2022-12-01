@@ -27,6 +27,8 @@ private:
     setenv("REQUEST_METHOD", line, 1);  
 // printf("REQUEST_METHOD: %s\n", getenv("REQUEST_METHOD"));
     line = strtok(NULL, " "); 
+    setenv("REQUEST_URI", line, 1);  
+// printf("REQUEST_URI: %s\n", getenv("REQUEST_URI"));
     char *query = strchr(line, '?');
     if (query != NULL)
     {
@@ -35,7 +37,7 @@ private:
       setenv("QUERY_STRING", query, 1);  
 // printf("REQUEST_METHOD: %s\n", getenv("REQUEST_METHOD")); 
     }
-    setenv("REQUEST_URI", line, 1);  
+    setenv("EXEC_TO", line, 1);  
 // printf("REQUEST_URI: %s\n", getenv("REQUEST_URI"));
     line = strtok(NULL, "\r\n"); 
     setenv("SERVER_PROTOCOL", line, 1);   
@@ -43,8 +45,6 @@ private:
     // Host: nplinux10.cs.nctu.edu.tw:10001
     line = strtok(NULL, " "); 
     line = strtok(NULL, "\r\n"); 
-    char *p = strchr(line, ':');
-    *p = '\0';
     setenv("HTTP_HOST", line, 1);
 // printf("HTTP_HOST: %s\n", getenv("HTTP_HOST"));
     
@@ -77,7 +77,7 @@ private:
 
             my_parse_request(length);
             char to[100];
-            sprintf(to, ".%s", getenv("REQUEST_URI"));
+            sprintf(to, ".%s", getenv("EXEC_TO"));
             printf("to:%s\n", to);
 
             printf("native handle: %d\n", socket_.native_handle());
