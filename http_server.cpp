@@ -23,10 +23,10 @@ private:
     char *line;
 
     // GET /test.cgi?a=b&c=d HTTP/1.1
-    line = strtok(rq, " "); 
+    line = strtok_r(rq, " ", &rq); 
     setenv("REQUEST_METHOD", line, 1);  
 // printf("REQUEST_METHOD: %s\n", getenv("REQUEST_METHOD"));
-    line = strtok(NULL, " "); 
+    line = strtok_r(NULL, " ", &rq); 
     setenv("REQUEST_URI", line, 1);  
 // printf("REQUEST_URI: %s\n", getenv("REQUEST_URI"));
     char *query = strchr(line, '?');
@@ -39,12 +39,12 @@ private:
     }
     setenv("EXEC_TO", line, 1);  
 // printf("REQUEST_URI: %s\n", getenv("REQUEST_URI"));
-    line = strtok(NULL, "\r\n"); 
+    line = strtok_r(NULL, "\r\n", &rq); 
     setenv("SERVER_PROTOCOL", line, 1);   
 // printf("SERVER_PROTOCOL: %s\n", getenv("SERVER_PROTOCOL"));    
     // Host: nplinux10.cs.nctu.edu.tw:10001
-    line = strtok(NULL, " "); 
-    line = strtok(NULL, "\r\n"); 
+    line = strtok_r(NULL, " ", &rq); 
+    line = strtok_r(NULL, "\r\n", &rq); 
     setenv("HTTP_HOST", line, 1);
 // printf("HTTP_HOST: %s\n", getenv("HTTP_HOST"));
     
