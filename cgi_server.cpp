@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
-#include <signal.h>
 #include <boost/asio.hpp>
 
 #define max_length 50000
@@ -70,6 +69,7 @@ public:
     void start(int index)
     {
         id = index;
+        // dup2(my_query[id].fd, STDIN_FILENO);
 		cout << "start reading file " << my_query[id].file.data() << endl;
 
 		in.open(my_query[id].file.data(), ios::in);
@@ -77,7 +77,6 @@ public:
 		else cout << "successfully open " << my_query[id].file.data() << endl;
         
 		do_read_shell();
-		return;
     }
 
 private:
@@ -86,7 +85,6 @@ private:
 		shell.close();
 		close(my_query[id].fd);
 		shell.close();
-		cout << "close client " << id << endl;
 		return;
 	}
     void do_read_file()
@@ -106,7 +104,6 @@ private:
 		output_command(input);
 		
 		do_write_shell(input);
-		return;
 	}
 	void do_read_shell()
     {
@@ -122,7 +119,6 @@ private:
 				output_shell(shell_msg_s);
 				if (shell_msg_s.find('%') != string::npos) do_read_file(); // % is presented
 				else do_read_shell(); // waiting for %
-				return;
 			}
 			else 
 			{
@@ -132,9 +128,7 @@ private:
 				close_client();
 				return;
 			}
-			return;
         });
-		return;
 	}
 	void do_write_shell(string msg)
 	{
@@ -146,16 +140,13 @@ private:
             if (!ec)
             {
                 do_read_shell();
-				return;
             }
 			else {
 				cout << "can't write to shell " << id << endl;
 				close_client();
 				return;
 			}
-			return;
         });
-		return;
     }
     void do_write_web(string msg)
 	{
@@ -170,9 +161,7 @@ private:
 				close_client();
 				return;
 			}
-			return;
         });
-		return;
 	}
 
 	void output_shell(string add)
@@ -220,10 +209,6 @@ private:
 	// Getenv("REQUEST_METHOD", s);
 	// printf("REQUEST_METHOD: %s\n", s.data());
 		line = strtok(NULL, " "); 
-		s.assign(line, line+strlen(line));
-		Setenv("REQUEST_URI", s);
-	// Getenv("REQUEST_URI", s);  
-	// printf("REQUEST_URI: %s\n", s.data());
 		char *query = strchr(line, '?');
 		if (query != NULL)
 		{
@@ -235,7 +220,9 @@ private:
 	// printf("QUERY_STRING: %s\n", s.data()); 
 		}
 		s.assign(line, line+strlen(line));
-		Setenv("EXEC_TO", s);
+		Setenv("REQUEST_URI", s);
+	// Getenv("REQUEST_URI", s);  
+	// printf("REQUEST_URI: %s\n", s.data());
 		line = strtok(NULL, "\r\n"); 
 		s.assign(line, line+strlen(line));
 		Setenv("SERVER_PROTOCOL", s);
@@ -243,7 +230,9 @@ private:
 	// printf("SERVER_PROTOCOL: %s\n", s.data());
 		// Host: nplinux10.cs.nctu.edu.tw:10001
 		line = strtok(NULL, " "); 
-		line = strtok(NULL, "\r\n");
+		line = strtok(NULL, "\r\n"); 
+		char *p = strchr(line, ':');
+		*p = '\0';
 		s.assign(line, line+strlen(line));
 		Setenv("HTTP_HOST", s);
 	// Getenv("HTTP_HOST", s);
@@ -287,9 +276,7 @@ private:
 
 				my_parse_request(length);
 				string query;
-				Getenv("EXEC_TO", query);
-				char *q = strchr(query.data(), '?');
-				if (q != NULL) *q = '\0';
+				Getenv("REQUEST_URI", query);
 				cout << "query " << query << endl;
 				if (query == "/panel.cgi") print_panel();
 				else if (query == "/console.cgi") do_console();
@@ -499,10 +486,17 @@ private:
 							<style>\
 							* {\
 								font-family: 'Source Code Pro', monospace;\
-								font-size: 1rem !important; }\
-							body { background-color: #212529;}\
-							pre { color: #cccccc;}\
-							b { color: #01b468;}\
+								font-size: 1rem !important;\
+							}\
+							body {\
+								background-color: #212529;\
+							}\
+							pre {\
+								color: #cccccc;\
+							}\
+							b {\
+								color: #01b468;\
+							}\
 							</style>\
 						</head>\
 						<body>\
@@ -573,11 +567,6 @@ private:
 	tcp::acceptor acceptor_;
 };
 
-void close_server(int s)
-{
-	exit(0);
-}
-
 int main(int argc, char **argv)
 {   
     if (argc != 2)
@@ -585,9 +574,6 @@ int main(int argc, char **argv)
         printf("Usage: cgi_server.exe [port]\n");
         return -1;
     }
-
-	signal(SIGINT, close_server);
-	signal(SIGTERM, close_server);
 
     try 
     {
