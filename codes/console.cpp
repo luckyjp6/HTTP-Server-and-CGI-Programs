@@ -309,11 +309,11 @@ int main()
 			
 			io_context.run();
 			return 0;
-		}else {
-            int status;
-            wait(&status);
-        }
-		
+		}
+    }
+    for (int i = 0; i < num_child; i++) {
+        int status;
+        wait(&status);
     }
 
     return 0;
