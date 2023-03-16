@@ -4,7 +4,7 @@
 - 目前實作為了展示server concurrent process request的效果，包了一層panel.cgi，
   用於協助選取連線的remote working ground server和測資，remote working server預設在交大Linux工作站上，
   可自行更改panel.cgi內容調整希望連線的遠端工作站，可使用repo提供的single_proc_shell作為工作站執行檔。
-- 使用Boost.Asio實作，請確認您的電腦是否有此函式庫
+- 使用Boost.Asio實作，請確認您的電腦是否有此函式庫。
 
 ## For Linux
 ### Usage
