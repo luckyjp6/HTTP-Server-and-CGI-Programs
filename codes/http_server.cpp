@@ -22,10 +22,9 @@ private:
   {
     char *line;
 
-    // GET /test.cgi?a=b&c=d HTTP/1.1
     line = strtok(rq, " "); 
     setenv("REQUEST_METHOD", line, 1);  
-// printf("REQUEST_METHOD: %s\n", getenv("REQUEST_METHOD"));
+    
     line = strtok(NULL, " "); 
     char *query = strchr(line, '?');
     if (query != NULL)
@@ -33,34 +32,31 @@ private:
       *query = '\0';  
       query += 1;
       setenv("QUERY_STRING", query, 1);  
-// printf("REQUEST_METHOD: %s\n", getenv("REQUEST_METHOD")); 
     }
     setenv("REQUEST_URI", line, 1);  
-// printf("REQUEST_URI: %s\n", getenv("REQUEST_URI"));
+    
     line = strtok(NULL, "\r\n"); 
     setenv("SERVER_PROTOCOL", line, 1);   
-// printf("SERVER_PROTOCOL: %s\n", getenv("SERVER_PROTOCOL"));    
+      
     // Host: nplinux10.cs.nctu.edu.tw:10001
     line = strtok(NULL, " "); 
     line = strtok(NULL, "\r\n"); 
     char *p = strchr(line, ':');
     *p = '\0';
     setenv("HTTP_HOST", line, 1);
-// printf("HTTP_HOST: %s\n", getenv("HTTP_HOST"));
     
     setenv("SERVER_ADDR", socket_.local_endpoint().address().to_string().data(), 1);
-// printf("SERVER_ADDR: %s\n", getenv("SERVER_ADDR"));
+    
     char prt[20];
     memset(prt, '\0', sizeof(prt));
     sprintf(prt, "%d", socket_.local_endpoint().port());
     setenv("SERVER_PORT", prt, 1);
-// printf("SERVER_PORT: %s\n", getenv("SERVER_PORT"));
+    
     setenv("REMOTE_ADDR", socket_.remote_endpoint().address().to_string().data(), 1);
-// printf("REMOTE_ADDR: %s\n", getenv("REMOTE_ADDR"));
+
     memset(prt, '\0', sizeof(prt));
     sprintf(prt, "%d", socket_.remote_endpoint().port());
     setenv("REMOTE_PORT", prt, 1);
-// printf("REMOTE_PORT: %s\n", getenv("REMOTE_PORT"));
   }
   void do_read()
   {    

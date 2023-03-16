@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <boost/asio.hpp>
+#include <wait.h>
 #include <boost/system/error_code.hpp>
 
 #define max_length 50000
@@ -308,7 +309,10 @@ int main()
 			
 			io_context.run();
 			return 0;
-		}else wait();
+		}else {
+            int status;
+            wait(&status);
+        }
 		
     }
 
